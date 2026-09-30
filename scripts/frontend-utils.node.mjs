@@ -31,13 +31,14 @@ async function loadPureTsModule(file) {
   const errors = (result.diagnostics ?? []).filter((item) => item.category === ts.DiagnosticCategory.Error);
   assert.equal(errors.length, 0, errors.map((item) => ts.flattenDiagnosticMessageText(item.messageText, '\n')).join('\n'));
   const module = { exports: {} };
-  const context = vm.createContext({ module, exports: module.exports, console, Intl, Date, Math, Set, Map, Number, String, Boolean, RegExp, Object, Array });
+  const context = vm.createContext({ module, exports: module.exports, console, Intl, Date, Math, Set, Map, Number, String, Boolean, RegExp, Object, Array, URL });
   new vm.Script(result.outputText, { filename: file }).runInContext(context);
   return module.exports;
 }
 
 const filterModule = await loadPureTsModule('frontend/src/utils/filterRestaurants.ts');
 const distanceModule = await loadPureTsModule('frontend/src/utils/distance.ts');
+const formatModule = await loadPureTsModule('frontend/src/utils/format.ts');
 
 const defaultFilters = {
   query: '', maxPrice: null, studentDiscountOnly: true, premiumOnly: false, menuAvailable: false,
@@ -79,4 +80,11 @@ test('frontend lunch-open logic respects weekdays', () => {
 
 test('distance utility returns zero for same point', () => {
   assert.equal(distanceModule.distanceKm(60.45, 22.27, 60.45, 22.27), 0);
+});
+
+
+test('source labels show the actual menu provider', () => {
+  assert.equal(formatModule.sourceLabel('https://www.unica.fi/ravintolat/test/'), 'Unica');
+  assert.equal(formatModule.sourceLabel('https://www.sodexo.fi/ruokalistat/output/daily_json/100/2026-09-30'), 'Sodexo');
+  assert.equal(formatModule.sourceLabel('https://www.karkafeerna.fi/fi/lounas/'), 'Kårkaféerna');
 });

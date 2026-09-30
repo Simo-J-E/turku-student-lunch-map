@@ -2,7 +2,6 @@ import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import type { Restaurant } from '@turku-lunch/shared';
 import type { UserLocation } from '../hooks/useGeolocation';
-import { euro } from '../utils/format';
 
 function markerHtml(restaurant: Restaurant, selected: boolean) {
   const price = restaurant.studentPrice == null
@@ -29,7 +28,8 @@ export default function MapView({
 
   useEffect(() => {
     if (!element.current || mapRef.current) return;
-    const map = L.map(element.current, { zoomControl: true }).setView([60.4518, 22.2666], 13);
+    const map = L.map(element.current, { zoomControl: false }).setView([60.4518, 22.2666], 13);
+    L.control.zoom({ position: 'bottomright' }).addTo(map);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
       attribution: '&copy; OpenStreetMap contributors',
@@ -59,9 +59,7 @@ export default function MapView({
         iconAnchor: [size / 2, size / 2],
       });
       const marker = L.marker([restaurant.latitude, restaurant.longitude], { icon }).addTo(layer);
-      marker.bindPopup(
-        `<strong>${restaurant.name}</strong><br>${restaurant.address}<br>Opiskelija: ${euro(restaurant.studentPrice)}`,
-      );
+      marker.bindTooltip(restaurant.name, { direction: 'top', offset: [0, -18] });
       marker.on('click', () => onSelect(restaurant.id));
     }
 
@@ -87,6 +85,14 @@ export default function MapView({
       lastVisibleKey.current = visibleKey;
     }
   }, [restaurants, selectedId, onSelect, userLocation]);
+
+  useEffect(() => {
+    if (selectedId == null) return;
+    const map = mapRef.current;
+    const selected = restaurants.find((restaurant) => restaurant.id === selectedId);
+    if (!map || !selected) return;
+    map.flyTo([selected.latitude, selected.longitude], Math.max(map.getZoom(), 15), { duration: 0.35 });
+  }, [selectedId, restaurants]);
 
   return (
     <div

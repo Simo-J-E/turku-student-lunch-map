@@ -20,6 +20,19 @@ JÄLKIRUOKA
 Pannacotta (G, L)
 Torstai 1.10.2026`;
 
+test('Unica parser preserves full official meal names', () => {
+  const text = `Assarin Ullakko
+Keskiviikko 30.9.2026
+Lounas tarjolla 10.30–19.45
+BRYGGE
+3,10 / 7,90 / 9,90
+Meidän keittiön kukkakaali-manchegopihvejä (A, ILM, L)
+Tartarjogurttia (A, G, L)
+Torstai 1.10.2026`;
+  const result = parseUnicaText(text, '2026-09-30');
+  assert.equal(result.meals[0]?.name, 'Meidän keittiön kukkakaali-manchegopihvejä');
+});
+
 test('Unica parser parses lunch and ignores dessert price', () => {
   const result = parseUnicaText(unicaFixture, '2026-09-30');
   assert.equal(result.studentPrice, 3.1);

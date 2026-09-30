@@ -126,3 +126,7 @@ https://käyttäjä.github.io/turku-student-lunch-map/#/restaurant/assarin-ullak
 ## Lisenssi
 
 MIT
+
+## Kartan ravintolakortti
+
+Kun käyttäjä valitsee ravintolan kartalta tai listasta, kartan päälle avautuu responsiivinen kortti, jossa näkyvät päivän ruokalista, opiskelijahinnat, ruokavaliot sekä ruokalistan alkuperäinen lähde. Puhelimessa kortti käyttää kartan leveyttä ja ruokalista vierii kortin sisällä.

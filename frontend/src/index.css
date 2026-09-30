@@ -40,3 +40,56 @@ body { @apply bg-slate-50 text-slate-950 antialiased dark:bg-slate-950 dark:text
 @media (min-width: 1024px) {
   .app-layout { display:grid; grid-template-columns: 390px minmax(0,1fr); gap:12px; }
 }
+
+/* Selected restaurant card floats above the map on desktop and phone. */
+.map-shell { position: relative; }
+.selected-restaurant-panel {
+  position: absolute;
+  z-index: 900;
+  top: 12px;
+  left: 12px;
+  width: min(440px, calc(100% - 24px));
+  max-height: min(68dvh, 620px);
+  overflow: auto;
+  border: 1px solid rgb(226 232 240);
+  border-radius: 18px;
+  background: rgb(255 255 255 / 0.98);
+  padding: 16px;
+  box-shadow: 0 14px 40px rgb(15 23 42 / 0.22);
+  backdrop-filter: blur(10px);
+}
+.dark .selected-restaurant-panel {
+  border-color: rgb(51 65 85);
+  background: rgb(15 23 42 / 0.98);
+  box-shadow: 0 14px 40px rgb(0 0 0 / 0.38);
+}
+.selected-menu-list { max-height: 330px; overflow-y: auto; padding-right: 2px; }
+.selected-meal-row { padding: 10px 0; border-bottom: 1px solid rgb(241 245 249); }
+.selected-meal-row:last-child { border-bottom: 0; }
+.dark .selected-meal-row { border-color: rgb(30 41 59); }
+.meal-category { display: inline-flex; border-radius: 9999px; background: rgb(241 245 249); padding: 3px 7px; font-size: 10px; font-weight: 700; line-height: 1.2; text-transform: uppercase; letter-spacing: .03em; color: rgb(71 85 105); }
+.dark .meal-category { background: rgb(30 41 59); color: rgb(203 213 225); }
+.price-pill { display: inline-flex; border-radius: 9999px; background: rgb(15 23 42); color: white; padding: 5px 9px; font-size: 12px; font-weight: 700; }
+.dark .price-pill { background: white; color: rgb(15 23 42); }
+.diet-chip { display: inline-flex; border-radius: 9999px; border: 1px solid rgb(226 232 240); padding: 2px 6px; font-size: 10px; color: rgb(100 116 139); }
+.dark .diet-chip { border-color: rgb(51 65 85); color: rgb(148 163 184); }
+
+@media (max-width: 1023px) {
+  .app-layout { min-height: calc(100dvh - 150px); }
+  .map-shell { height: calc(100dvh - 150px); min-height: 520px; }
+  .map-shell .leaflet-container { min-height: 100%; }
+  .selected-restaurant-panel {
+    top: 10px;
+    left: 10px;
+    width: calc(100% - 20px);
+    max-height: min(56dvh, 520px);
+    border-radius: 16px;
+    padding: 14px;
+  }
+  .selected-menu-list { max-height: min(30dvh, 260px); }
+}
+
+@media (max-width: 420px) {
+  .selected-restaurant-panel { padding: 12px; }
+  .selected-menu-list { max-height: 230px; }
+}

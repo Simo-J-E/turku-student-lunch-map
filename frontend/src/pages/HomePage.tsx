@@ -4,6 +4,7 @@ import type { Restaurant, RestaurantFilters } from '@turku-lunch/shared';
 import Header from '../components/Header';
 import MapView from '../components/MapView';
 import RestaurantCard from '../components/RestaurantCard';
+import SelectedRestaurantPanel from '../components/SelectedRestaurantPanel';
 import FiltersPanel from '../components/FiltersPanel';
 import { DEFAULT_FILTERS } from '../constants/filters';
 import { api } from '../services/api';
@@ -30,7 +31,15 @@ export default function HomePage() {
     distanceKm:distanceKm(geo.location.latitude,geo.location.longitude,restaurant.latitude,restaurant.longitude),
   } : restaurant),[restaurants,geo.location]);
   const filtered = useMemo(() => filterRestaurants(enriched,filters),[enriched,filters]);
-  const select = useCallback((id:number) => setSelectedId(id),[]);
+  const select = useCallback((id:number) => {
+    setSelectedId(id);
+    setMobileView('map');
+  },[]);
+  const selectedRestaurant = useMemo(() => filtered.find((restaurant) => restaurant.id === selectedId), [filtered, selectedId]);
+
+  useEffect(() => {
+    if (selectedId != null && !selectedRestaurant) setSelectedId(undefined);
+  }, [selectedId, selectedRestaurant]);
   const hasActiveFilters = filters.maxPrice != null || filters.premiumOnly || filters.menuAvailable || filters.vegan || filters.vegetarian || filters.glutenFree || filters.openNow || Boolean(filters.area || filters.campus || filters.chain);
 
   return <div className="min-h-screen bg-slate-50 dark:bg-slate-950"><Header/>
@@ -49,10 +58,13 @@ export default function HomePage() {
       {geo.error && <div className="mb-3 text-xs text-slate-500">{geo.error}</div>}
       {loading ? <div className="card p-8 text-center">Ladataan ravintoloita…</div> : <div className="app-layout">
         <section className={`${mobileView === 'list' ? 'block' : 'hidden'} restaurant-list lg:block`} aria-label="Ravintolalista">
-          {filtered.map((restaurant) => <RestaurantCard key={restaurant.id} restaurant={restaurant} selected={restaurant.id === selectedId} onSelect={() => setSelectedId(restaurant.id)}/>)}
+          {filtered.map((restaurant) => <RestaurantCard key={restaurant.id} restaurant={restaurant} selected={restaurant.id === selectedId} onSelect={() => select(restaurant.id)}/>)}
           {!filtered.length && <div className="card p-6 text-center text-sm text-slate-500">Ei ravintoloita näillä suodattimilla.</div>}
         </section>
-        <section className={`${mobileView === 'map' ? 'block' : 'hidden'} map-shell lg:block`}><MapView restaurants={filtered} selectedId={selectedId} onSelect={select} userLocation={geo.location}/></section>
+        <section className={`${mobileView === 'map' ? 'block' : 'hidden'} map-shell lg:block`}>
+          <MapView restaurants={filtered} selectedId={selectedId} onSelect={select} userLocation={geo.location}/>
+          {selectedRestaurant && <SelectedRestaurantPanel restaurant={selectedRestaurant} onClose={() => setSelectedId(undefined)}/>}
+        </section>
       </div>}
     </main>
   </div>;
