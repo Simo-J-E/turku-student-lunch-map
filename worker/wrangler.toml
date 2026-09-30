@@ -1,0 +1,12 @@
+name = "turku-student-lunch-api"
+main = "src/index.ts"
+compatibility_date = "2026-09-01"
+migrations_dir = "../migrations"
+
+[vars]
+ALLOWED_ORIGIN = "*"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "turku-student-lunch"
+database_id = "REPLACE_WITH_D1_DATABASE_ID"

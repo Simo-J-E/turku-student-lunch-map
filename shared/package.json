@@ -1,0 +1,8 @@
+{
+  "name": "@turku-lunch/shared",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "exports": "./types/index.ts",
+  "types": "./types/index.ts"
+}

@@ -1,0 +1,16 @@
+{
+  "name": "@turku-lunch/worker",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": { "@turku-lunch/shared": "*" },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250920.0",
+    "wrangler": "^4.38.0"
+  }
+}
