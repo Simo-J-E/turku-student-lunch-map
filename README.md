@@ -1,37 +1,61 @@
-# Turun opiskelijalounaskartta
+# Turku Student Lunch Map
 
-Yksinkertainen karttasovellus Turun opiskelijaravintoloille. Näyttää opiskelijahinnat, sijainnit, suodattimet ja saatavilla olevat päivän ruokalistat.
+Static GitHub Pages application for finding Kela-subsidised student restaurants in Turku and checking today's menus.
 
-## Tärkeä: ei backendiä
+## What this version does
 
-Tämä projekti toimii **pelkällä GitHub Pagesilla**.
+- React + TypeScript + Vite + Tailwind CSS
+- GitHub Pages only: no backend, Cloudflare Worker or database
+- GitHub Actions refreshes menu data and deploys the static site
+- Map + permanent restaurant sidebar/list
+- Clicking a map marker selects, highlights and scrolls to that restaurant in the sidebar
+- The selected sidebar card expands its full menu; no map popup/window is opened
+- On phones, tapping a map marker switches to the list and opens the selected restaurant
+- Meals are normalised as **basic**, **special/deluxe**, or **other**
+- Search, price/diet/opening filters, geolocation and dark mode
+- No analytics or advertising cookies
 
-- React + TypeScript + Vite
-- Tailwind CSS
-- Leaflet + OpenStreetMap
-- GitHub Pages
-- GitHub Actions
-- Ei Cloudflarea
-- Ei D1-tietokantaa
-- Ei Worker-palvelinta
-- Ei API-avaimia tai GitHub Secrets -asetuksia
+## Central data format
 
-Ruokalistat päivitetään GitHub Actionsissa rakennusvaiheessa. Action hakee julkisista ravintolalähteistä päivän tiedot ja kirjoittaa ne staattiseksi tiedostoksi `frontend/public/data/restaurants.json`. Selain lukee tämän tiedoston suoraan GitHub Pagesista.
+All providers are normalised into one build artifact:
 
-## Ravintolat
+```text
+frontend/public/data/restaurants.json
+```
 
-Projektissa on 21 Turun opiskelijaravintolan perustiedot. Automaattinen päivän ruokalistan haku on toteutettu lähteille, jotka voidaan lukea luotettavasti build-vaiheessa:
+GitHub Actions creates this file from official restaurant sources before building the site. See [DATA_SOURCES.md](./DATA_SOURCES.md).
 
-- Unica / Compass Group
-- Sodexo
-- Kårkaféerna
-- Juvenes Block
+The project does **not** scrape or call `opiskelijalounas.app` because its current terms prohibit scraping its website/APIs/backend and republishing restaurant data at scale without permission. It is used only as a human reference when checking coverage.
 
-Jos jonkin ravintolan lähde ei ole automaattisesti luettavissa, ravintola näkyy silti kartalla ja käyttäjä pääsee sen viralliselle ruokalistasivulle.
+## Basic vs special/deluxe meals
 
-## Paikallinen käyttö
+Current Kela pricing rules are kept separately in:
 
-Tarvitset Node.js 22:n.
+```text
+data/kela-pricing.json
+```
+
+That file currently represents rules valid from 1 January 2026 and contains the official Kela source URL. Menu prices themselves still come from restaurant sources.
+
+## Accessibility and privacy
+
+The interface is designed toward WCAG 2.2 AA / EN 301 549 practices:
+
+- keyboard-operable restaurant selection
+- visible focus indicators
+- semantic landmarks and labels
+- skip link to restaurant results
+- screen-reader live status for selection/results
+- 44 px touch targets for primary controls
+- reduced-motion support
+- list view as an alternative to the map
+- responsive phone/tablet/desktop layouts
+- no analytics or tracking cookies
+- geolocation is requested only by user action and is not stored by the app
+
+This is an implementation target, not a legal certification. An accessibility audit should be done before claiming formal conformance.
+
+## Local development
 
 ```bash
 npm install
@@ -39,94 +63,37 @@ npm run update:data
 npm run dev
 ```
 
-Jos haluat vain käyttää repossa olevaa ravintoladataa ilman verkkohakuja:
+Offline UI/data-shape development:
 
 ```bash
 npm run update:data:offline
 npm run dev
 ```
 
-## Tarkistukset
-
-Ennen julkaisua:
+## Checks
 
 ```bash
 npm run lint
 npm run typecheck
 npm run test
+npm run update:data:offline
+npm run validate:data
 npm run build
 ```
 
-Tai kaikki yhdellä komennolla:
+Or:
 
 ```bash
 npm run verify
 ```
 
-## GitHub Pages -julkaisu
+## GitHub Pages
 
-1. Pushaa projekti GitHubiin `main`-branchiin.
-2. Avaa repositoryn **Settings → Pages**.
-3. Valitse **Source: GitHub Actions**.
-4. Avaa **Actions** ja anna `Deploy GitHub Pages` -workflow'n valmistua.
+1. Push the repository to GitHub.
+2. Open **Settings → Pages**.
+3. Set the source to **GitHub Actions**.
+4. Push to `main` or run **Deploy GitHub Pages** manually.
 
-Muita asetuksia ei tarvita.
+The workflow also runs every two hours to rebuild the static menu data.
 
-`Deploy GitHub Pages` tekee automaattisesti seuraavat asiat:
-
-1. asentaa riippuvuudet
-2. ajaa lintin
-3. ajaa TypeScript-tarkistuksen
-4. ajaa testit
-5. hakee päivän ruokalistat
-6. buildaa staattisen React-sivun
-7. julkaisee sen GitHub Pagesiin
-
-Workflow ajetaan myös automaattisesti noin kahden tunnin välein, jotta päivän ruokalistat päivittyvät ilman omaa backend-palvelinta.
-
-## Projektirakenne
-
-```text
-.
-├── .github/workflows/
-│   ├── ci.yml
-│   └── deploy-pages.yml
-├── data/
-│   └── restaurants.json
-├── frontend/
-│   ├── public/data/restaurants.json
-│   └── src/
-├── scripts/
-│   ├── parsers/
-│   └── update-data.mjs
-├── shared/
-└── package.json
-```
-
-## Ruokalistojen päivitys
-
-Manuaalinen päivitys paikallisesti:
-
-```bash
-npm run update:data
-```
-
-Komento ei kaada koko buildia, jos yhden ravintolan ulkoinen sivu ei vastaa. Muut ravintolat päivitetään normaalisti.
-
-## GitHub Pages -reititys
-
-Sovellus käyttää `HashRouter`ia, joten myös ravintoloiden tarkemmat sivut toimivat GitHub Pagesissa ilman erillistä palvelinreititystä.
-
-Esimerkiksi:
-
-```text
-https://käyttäjä.github.io/turku-student-lunch-map/#/restaurant/assarin-ullakko
-```
-
-## Lisenssi
-
-MIT
-
-## Kartan ravintolakortti
-
-Kun käyttäjä valitsee ravintolan kartalta tai listasta, kartan päälle avautuu responsiivinen kortti, jossa näkyvät päivän ruokalista, opiskelijahinnat, ruokavaliot sekä ruokalistan alkuperäinen lähde. Puhelimessa kortti käyttää kartan leveyttä ja ruokalista vierii kortin sisällä.
+No secrets, D1 database, Cloudflare account or backend URL are required.

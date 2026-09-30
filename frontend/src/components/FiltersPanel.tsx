@@ -24,7 +24,7 @@ export default function FiltersPanel({ filters, setFilters, restaurants, onLocat
       <label className="block">Hinta
         <select className="input mt-1" value={filters.maxPrice ?? ''} onChange={(event: ChangeEvent<HTMLSelectElement>) => patch({maxPrice:event.target.value ? Number(event.target.value) : null})}>
           <option value="">Kaikki hinnat</option>
-          <option value="3.2">Enintään 3,20 €</option>
+          <option value="3.1">Enintään 3,10 €</option>
           <option value="5.9">Enintään 5,90 €</option>
           <option value="7">Enintään 7,00 €</option>
         </select>
@@ -61,7 +61,7 @@ export default function FiltersPanel({ filters, setFilters, restaurants, onLocat
       ] as const).map(([key,label]) => <label key={key} className={`filter-chip ${filters[key] ? 'filter-chip-active' : ''}`}>
         <input className="sr-only" type="checkbox" checked={filters[key]} onChange={(event: ChangeEvent<HTMLInputElement>) => patch({[key]:event.target.checked})}/>{label}
       </label>)}
-      <button className="filter-chip" onClick={onLocate}><LocateFixed size={15}/>{locating ? 'Haetaan…' : 'Käytä sijaintiani'}</button>
+      <button className="filter-chip" onClick={onLocate} disabled={locating} aria-busy={locating}><LocateFixed size={15}/>{locating ? 'Haetaan…' : 'Käytä sijaintiani'}</button>
     </div>
   </div>;
 }

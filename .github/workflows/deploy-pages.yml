@@ -39,6 +39,9 @@ jobs:
       - name: Fetch today's restaurant menus
         run: npm run update:data
 
+      - name: Validate generated menu data
+        run: npm run validate:data
+
       - name: Build static site
         run: npm run build
 

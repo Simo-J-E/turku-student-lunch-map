@@ -1,5 +1,6 @@
 export type StudentMealType = 'KELA_SUBSIDIZED' | 'STUDENT_DISCOUNT' | 'PREMIUM_STUDENT' | 'OTHER';
 export type Diet = 'VEGAN' | 'VEGETARIAN' | 'GLUTEN_FREE' | 'LACTOSE_FREE' | 'DAIRY_FREE';
+export type MealTier = 'BASIC' | 'SPECIAL' | 'OTHER';
 
 export interface Meal {
   id?: number;
@@ -10,6 +11,7 @@ export interface Meal {
   studentPrice?: number | null;
   diets: Diet[];
   allergens: string[];
+  tier?: MealTier;
 }
 
 export interface Menu {

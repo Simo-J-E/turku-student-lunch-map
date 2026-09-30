@@ -58,7 +58,7 @@ export default function MapView({
         iconSize: [size, size],
         iconAnchor: [size / 2, size / 2],
       });
-      const marker = L.marker([restaurant.latitude, restaurant.longitude], { icon }).addTo(layer);
+      const marker = L.marker([restaurant.latitude, restaurant.longitude], { icon, keyboard: true, title: restaurant.name, alt: restaurant.name, riseOnHover: true }).addTo(layer);
       marker.bindTooltip(restaurant.name, { direction: 'top', offset: [0, -18] });
       marker.on('click', () => onSelect(restaurant.id));
     }
@@ -91,14 +91,17 @@ export default function MapView({
     const map = mapRef.current;
     const selected = restaurants.find((restaurant) => restaurant.id === selectedId);
     if (!map || !selected) return;
-    map.flyTo([selected.latitude, selected.longitude], Math.max(map.getZoom(), 15), { duration: 0.35 });
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduceMotion) map.setView([selected.latitude, selected.longitude], Math.max(map.getZoom(), 15), { animate: false });
+    else map.flyTo([selected.latitude, selected.longitude], Math.max(map.getZoom(), 15), { duration: 0.35 });
   }, [selectedId, restaurants]);
 
   return (
     <div
       ref={element}
       className="h-full min-h-[440px] w-full"
-      aria-label="Turun opiskelijaravintoloiden kartta"
+      aria-label="Turun opiskelijaravintoloiden kartta. Valitse ravintola kartalta nähdäksesi sen ruokalistan ravintolalistassa."
+      role="region"
     />
   );
 }

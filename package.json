@@ -16,8 +16,9 @@
     "test:static": "node --test scripts/*.node.mjs scripts/parsers/*.node.mjs",
     "lint": "eslint frontend/src shared scripts --max-warnings=0",
     "typecheck": "npm run typecheck -w frontend",
-    "verify": "npm run lint && npm run typecheck && npm run test && npm run build",
-    "format": "prettier --write ."
+    "verify": "npm run lint && npm run typecheck && npm run test && npm run update:data:offline && npm run validate:data && npm run build",
+    "format": "prettier --write .",
+    "validate:data": "node scripts/validate-data.mjs"
   },
   "devDependencies": {
     "@eslint/js": "9.36.0",

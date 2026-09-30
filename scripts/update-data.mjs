@@ -8,6 +8,8 @@ import { parseJuvenesHtml } from './parsers/juvenes.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const INPUT = path.join(ROOT, 'data', 'restaurants.json');
+const PRICING_INPUT = path.join(ROOT, 'data', 'kela-pricing.json');
+const KELA_PRICING = JSON.parse(await fs.readFile(PRICING_INPUT, 'utf8'));
 const OUTPUT = path.join(ROOT, 'frontend', 'public', 'data', 'restaurants.json');
 const OFFLINE = process.argv.includes('--offline');
 
@@ -54,8 +56,25 @@ function availabilityFromMeals(meals, diet) {
   return meals.some((meal) => meal.diets.includes(diet));
 }
 
+function categoryIsNonMeal(category = '') {
+  return /JÄLKIRUOKA|DESSERT|AAMIAINEN|BREAKFAST|SALAATTIASEMA|SALAD BAR|WEIGH|100\s*G|KAHVI|COFFEE/i.test(category);
+}
+
+export function classifyMealTier(meal, pricing = KELA_PRICING) {
+  if (meal.studentPrice == null || categoryIsNonMeal(meal.category)) return 'OTHER';
+  if (meal.studentPrice <= pricing.basicMax + 0.001) return 'BASIC';
+  if (meal.studentPrice >= pricing.specialMin - 0.001 && meal.studentPrice <= pricing.specialMax + 0.001) return 'SPECIAL';
+  return 'OTHER';
+}
+
 export function toStaticRestaurant(seed, index, generatedAt, menu = null, parsed = null) {
-  const meals = menu?.meals ?? [];
+  const rawMeals = menu?.meals ?? [];
+  const meals = rawMeals.map((meal) => ({ ...meal, tier: classifyMealTier(meal) }));
+  const normalizedMenu = menu ? { ...menu, meals } : null;
+  const basicPrices = meals.filter((meal) => meal.tier === 'BASIC' && meal.studentPrice != null).map((meal) => meal.studentPrice);
+  const specialPrices = meals.filter((meal) => meal.tier === 'SPECIAL' && meal.studentPrice != null).map((meal) => meal.studentPrice);
+  const menuBasicPrice = basicPrices.length ? Math.min(...basicPrices) : null;
+  const menuSpecialPrice = specialPrices.length ? Math.min(...specialPrices) : null;
   return {
     id: index + 1,
     name: seed.name,
@@ -71,8 +90,8 @@ export function toStaticRestaurant(seed, index, generatedAt, menu = null, parsed
     menuUrl: seed.menuUrl,
     studentDiscountAvailable: true,
     studentMealType: 'KELA_SUBSIDIZED',
-    studentPrice: parsed?.studentPrice ?? seed.studentPrice ?? null,
-    premiumStudentPrice: parsed?.premiumPrice ?? seed.premiumStudentPrice ?? null,
+    studentPrice: menuBasicPrice ?? parsed?.studentPrice ?? seed.studentPrice ?? null,
+    premiumStudentPrice: menuSpecialPrice ?? (parsed?.premiumPrice != null && parsed.premiumPrice >= KELA_PRICING.specialMin && parsed.premiumPrice <= KELA_PRICING.specialMax ? parsed.premiumPrice : null) ?? seed.premiumStudentPrice ?? null,
     normalPrice: null,
     currency: 'EUR',
     openingHours: seed.openingHours ?? null,
@@ -85,7 +104,7 @@ export function toStaticRestaurant(seed, index, generatedAt, menu = null, parsed
     active: true,
     updatedAt: generatedAt,
     priceLastCheckedAt: parsed?.studentPrice != null || parsed?.premiumPrice != null ? generatedAt : null,
-    todayMenu: menu,
+    todayMenu: normalizedMenu,
   };
 }
 

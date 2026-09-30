@@ -36,7 +36,9 @@ export function parseSodexoJson(data) {
   }
 
   const sortedPrices = [...eligiblePrices].sort((a, b) => a - b);
-  const studentPrice = sortedPrices[0] ?? null;
-  const premiumPrice = sortedPrices.find((price) => studentPrice != null && price > studentPrice + 0.01) ?? null;
+  const basicPrices = sortedPrices.filter((price) => price <= 3.10);
+  const specialPrices = sortedPrices.filter((price) => price >= 4.50 && price <= 5.90);
+  const studentPrice = basicPrices[0] ?? sortedPrices[0] ?? null;
+  const premiumPrice = specialPrices[0] ?? null;
   return { meals, studentPrice, premiumPrice };
 }

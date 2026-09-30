@@ -16,7 +16,7 @@ export function useGeolocation() {
         setLoading(false);
       },
       () => { setError('Sijaintia ei saatu. Sovellus toimii myös ilman sitä.'); setLoading(false); },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 },
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 },
     );
   };
   return { location, error, loading, locate };

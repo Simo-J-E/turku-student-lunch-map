@@ -14,6 +14,7 @@ jobs:
           node-version: 22
       - run: npm install --no-audit --no-fund
       - run: npm run update:data:offline
+      - run: npm run validate:data
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run test

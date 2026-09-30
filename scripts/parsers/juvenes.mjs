@@ -33,7 +33,10 @@ export function parseJuvenesHtml(html) {
     }
     if (/\b(?:G|L|M|Mu|VEG)(?:[, )]|$)/i.test(line) && line.length < 180 && !/^G\s*=|^L\s*=|^M\s*=|^Mu\s*=|^VEG\s*=/i.test(line)) {
       const name = line.replace(/\s+(?:G|L|M|Mu|VEG)(?:\s*,\s*(?:G|L|M|Mu|VEG))*.*$/i, '').replace(/^[-*]\s*/, '').trim();
-      if (name && name.length > 2) meals.push({ name, category, studentPrice, diets: parseDiets(line), allergens: [] });
+      if (name && name.length > 2) {
+        const mealStudentPrice = /FUSION|DELUXE|PREMIUM|ERIKOIS/i.test(category) && premiumPrice != null ? premiumPrice : studentPrice;
+        meals.push({ name, category, studentPrice: mealStudentPrice, diets: parseDiets(line), allergens: [] });
+      }
     }
   }
 
