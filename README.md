@@ -1,125 +1,54 @@
-# Turun opiskelijalounaat
+# Turun opiskelijalounaskartta
 
-Yksinkertainen karttasovellus Turun opiskelijaravintoloille. Kartalta ja listasta näkee opiskelijahinnat, päivän ruokalistat silloin kun ne voidaan hakea virallisesta lähteestä sekä hyödylliset suodattimet.
+Yksinkertainen karttasovellus Turun opiskelijaravintoloille. Näyttää opiskelijahinnat, sijainnit, suodattimet ja saatavilla olevat päivän ruokalistat.
 
-## Stack
+## Tärkeä: ei backendiä
+
+Tämä projekti toimii **pelkällä GitHub Pagesilla**.
 
 - React + TypeScript + Vite
 - Tailwind CSS
 - Leaflet + OpenStreetMap
-- Cloudflare Workers + D1
-- Vitest, ESLint, Prettier
-- GitHub Actions + GitHub Pages
-- PWA manifest + basic offline cache
+- GitHub Pages
+- GitHub Actions
+- Ei Cloudflarea
+- Ei D1-tietokantaa
+- Ei Worker-palvelinta
+- Ei API-avaimia tai GitHub Secrets -asetuksia
+
+Ruokalistat päivitetään GitHub Actionsissa rakennusvaiheessa. Action hakee julkisista ravintolalähteistä päivän tiedot ja kirjoittaa ne staattiseksi tiedostoksi `frontend/public/data/restaurants.json`. Selain lukee tämän tiedoston suoraan GitHub Pagesista.
 
 ## Ravintolat
 
-Seedissä on 21 Turun opiskelijaravintolaa:
+Projektissa on 21 Turun opiskelijaravintolan perustiedot. Automaattinen päivän ruokalistan haku on toteutettu lähteille, jotka voidaan lukea luotettavasti build-vaiheessa:
 
-- Assarin Ullakko
-- Block
-- Deli Pharma
-- Delica
-- Dental
-- Fiskarholmen - Auriga Business Center
-- Flavoria cafe
-- Galilei
-- Kasvisravintola Keidas
-- Kisälli
-- Kårkafé Arken
-- Kårkafé Astra
-- Kårkafé Aurum
-- Kårkafé Kåren
-- Linus
-- Macciavelli
-- Monttu ja Mercatori
-- Sigyn
-- Turun AMK Lemminkäisenkatu
-- TYKS U-sairaala
-- Unican Kulma
+- Unica / Compass Group
+- Sodexo
+- Kårkaféerna
+- Juvenes Block
 
-Ravintolat näkyvät kartalla myös silloin, kun päivän ruokalistaa ei saada koneellisesti.
+Jos jonkin ravintolan lähde ei ole automaattisesti luettavissa, ravintola näkyy silti kartalla ja käyttäjä pääsee sen viralliselle ruokalistasivulle.
 
-## Ruokalähteet
+## Paikallinen käyttö
 
-Worker käyttää ensisijaisesti virallisia lähteitä:
-
-- Unica / Compass Group: virallisen ravintolasivun parseri
-- Sodexo: virallinen daily JSON -ruokalista
-- Juvenes Block: viralliselta sivulta opiskelijahinnat
-- Kårkaféerna: viralliselta sivulta opiskelijahinnat
-- Muut ravintolat: virallinen lähdelinkki näytetään, eikä puuttuvaa ruokalistaa keksitä
-
-Ruokalista välimuistitetaan D1:een. Nykyinen automaattinen päivitysväli on 3 tuntia. Hinta ei ole sovelluksen suodatuslogiikkaan kovakoodattu, vaan se on ravintolan dataa ja parseri voi päivittää sen lähteestä.
-
-## 1. Asenna
+Tarvitset Node.js 22:n.
 
 ```bash
 npm install
-```
-
-## 2. Luo D1
-
-```bash
-cd worker
-npx wrangler d1 create turku-student-lunch
-```
-
-Kopioi saatu `database_id` tiedostoon `worker/wrangler.toml`:
-
-```toml
-database_id = "OMA_D1_DATABASE_ID"
-```
-
-Aja migraatiot rootista:
-
-```bash
-npm run migrate:local -w worker
-npm run migrate:remote -w worker
-```
-
-GitHubin Worker-workflow ajaa remote-migraatiot automaattisesti ennen deployta.
-
-## 3. Admin secret
-
-Paikallisesti:
-
-```bash
-cp worker/.dev.vars.example worker/.dev.vars
-```
-
-Muuta arvo:
-
-```text
-ADMIN_SECRET=oma-pitka-salaisuus
-```
-
-Tuotannossa:
-
-```bash
-cd worker
-npx wrangler secret put ADMIN_SECRET
-```
-
-## 4. Käynnistä paikallisesti
-
-Rootista:
-
-```bash
+npm run update:data
 npm run dev
 ```
 
-Frontend: `http://localhost:5173`
+Jos haluat vain käyttää repossa olevaa ravintoladataa ilman verkkohakuja:
 
-Worker: `http://localhost:8787`
-
-Luo frontendille `frontend/.env.local`:
-
-```text
-VITE_API_URL=http://localhost:8787
+```bash
+npm run update:data:offline
+npm run dev
 ```
 
-## 5. Tarkista ennen julkaisua
+## Tarkistukset
+
+Ennen julkaisua:
 
 ```bash
 npm run lint
@@ -128,41 +57,72 @@ npm run test
 npm run build
 ```
 
-Samat tarkistukset ajetaan myös GitHub Actionsissa ennen kumpaakaan deployta. Jos yksikin tarkistus epäonnistuu, Worker tai GitHub Pages ei julkaise uutta versiota.
+Tai kaikki yhdellä komennolla:
 
-## GitHub Pages
+```bash
+npm run verify
+```
 
-1. Pushaa repo GitHubiin.
-2. Repository Settings -> Pages -> Source: **GitHub Actions**.
-3. Lisää repository variable `VITE_API_URL`, esimerkiksi `https://turku-student-lunch-api.<subdomain>.workers.dev`.
-4. Push `main`-branchiin käynnistää tarkistukset ja Pages-deployn.
+## GitHub Pages -julkaisu
 
-## Cloudflare deploy
+1. Pushaa projekti GitHubiin `main`-branchiin.
+2. Avaa repositoryn **Settings → Pages**.
+3. Valitse **Source: GitHub Actions**.
+4. Avaa **Actions** ja anna `Deploy GitHub Pages` -workflow'n valmistua.
 
-Lisää GitHub Secrets:
+Muita asetuksia ei tarvita.
 
-- `CLOUDFLARE_API_TOKEN`
-- `CLOUDFLARE_ACCOUNT_ID`
+`Deploy GitHub Pages` tekee automaattisesti seuraavat asiat:
 
-Päivitä `worker/wrangler.toml` oikealla D1 database id:llä. Worker deployataan vasta kun lint, typecheck, testit ja build ovat menneet läpi.
+1. asentaa riippuvuudet
+2. ajaa lintin
+3. ajaa TypeScript-tarkistuksen
+4. ajaa testit
+5. hakee päivän ruokalistat
+6. buildaa staattisen React-sivun
+7. julkaisee sen GitHub Pagesiin
 
-## API
+Workflow ajetaan myös automaattisesti noin kahden tunnin välein, jotta päivän ruokalistat päivittyvät ilman omaa backend-palvelinta.
 
-- `GET /api/health`
-- `GET /api/restaurants?city=Turku`
-- `GET /api/restaurants/:slug`
-- `GET /api/menus/today`
-- `POST /api/admin/refresh` (Bearer ADMIN_SECRET)
-- `PATCH /api/admin/restaurants/:id` (Bearer ADMIN_SECRET)
+## Projektirakenne
 
-## GitHub Pages routing
+```text
+.
+├── .github/workflows/
+│   ├── ci.yml
+│   └── deploy-pages.yml
+├── data/
+│   └── restaurants.json
+├── frontend/
+│   ├── public/data/restaurants.json
+│   └── src/
+├── scripts/
+│   ├── parsers/
+│   └── update-data.mjs
+├── shared/
+└── package.json
+```
 
-Sovellus käyttää `HashRouter`-reititystä, joten refresh toimii myös projektipolun alla ilman 404:ää.
+## Ruokalistojen päivitys
 
-## Lisää uusi provider
+Manuaalinen päivitys paikallisesti:
 
-Tee parseri `worker/src/parsers/`-kansioon ja kutsu sitä `refreshRestaurantMenu`-palvelusta. Pidä lähteenä ravintolan omaa tai muuta virallista lähdettä. Puuttuvaa tietoa ei arvata.
+```bash
+npm run update:data
+```
+
+Komento ei kaada koko buildia, jos yhden ravintolan ulkoinen sivu ei vastaa. Muut ravintolat päivitetään normaalisti.
+
+## GitHub Pages -reititys
+
+Sovellus käyttää `HashRouter`ia, joten myös ravintoloiden tarkemmat sivut toimivat GitHub Pagesissa ilman erillistä palvelinreititystä.
+
+Esimerkiksi:
+
+```text
+https://käyttäjä.github.io/turku-student-lunch-map/#/restaurant/assarin-ullakko
+```
 
 ## Lisenssi
 
-MIT.
+MIT

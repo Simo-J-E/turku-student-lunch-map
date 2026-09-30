@@ -1,27 +1,30 @@
 {
   "name": "turku-student-lunch-map",
   "private": true,
-  "version": "1.0.0",
+  "version": "2.0.0",
   "type": "module",
-  "workspaces": ["frontend", "worker", "shared"],
+  "workspaces": [
+    "frontend",
+    "shared"
+  ],
   "scripts": {
-    "dev": "concurrently -n frontend,worker \"npm run dev -w frontend\" \"npm run dev -w worker\"",
-    "dev:frontend": "npm run dev -w frontend",
-    "dev:worker": "npm run dev -w worker",
-    "build": "npm run build -w frontend && npm run typecheck -w worker",
-    "test": "vitest run",
-    "lint": "eslint frontend/src worker/src shared --max-warnings=0",
-    "typecheck": "npm run typecheck -w frontend && npm run typecheck -w worker",
+    "dev": "npm run dev -w frontend",
+    "update:data": "node scripts/update-data.mjs",
+    "update:data:offline": "node scripts/update-data.mjs --offline",
+    "build": "npm run build -w frontend",
+    "test": "node --test scripts/*.node.mjs scripts/parsers/*.node.mjs",
+    "test:static": "node --test scripts/*.node.mjs scripts/parsers/*.node.mjs",
+    "lint": "eslint frontend/src shared scripts --max-warnings=0",
+    "typecheck": "npm run typecheck -w frontend",
+    "verify": "npm run lint && npm run typecheck && npm run test && npm run build",
     "format": "prettier --write ."
   },
   "devDependencies": {
-    "@eslint/js": "^9.36.0",
-    "concurrently": "^9.2.1",
-    "eslint": "^9.36.0",
-    "globals": "^16.4.0",
-    "prettier": "^3.6.2",
-    "typescript": "^5.9.2",
-    "typescript-eslint": "^8.44.1",
-    "vitest": "^3.2.4"
+    "@eslint/js": "9.36.0",
+    "eslint": "9.36.0",
+    "globals": "16.4.0",
+    "prettier": "3.6.2",
+    "typescript": "5.9.2",
+    "typescript-eslint": "8.44.1"
   }
 }

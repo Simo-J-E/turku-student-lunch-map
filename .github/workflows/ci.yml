@@ -1,7 +1,9 @@
 name: CI
+
 on:
   push:
   pull_request:
+
 jobs:
   quality:
     runs-on: ubuntu-latest
@@ -11,9 +13,8 @@ jobs:
         with:
           node-version: 22
       - run: npm install --no-audit --no-fund
+      - run: npm run update:data:offline
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run test
       - run: npm run build
-        env:
-          VITE_API_URL: https://example.invalid

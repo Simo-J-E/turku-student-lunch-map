@@ -1,16 +1,23 @@
-name: Deploy frontend to GitHub Pages
+name: Deploy GitHub Pages
+
 on:
   push:
     branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: '17 */2 * * *'
+
 permissions:
   contents: read
   pages: write
   id-token: write
+
 concurrency:
   group: pages
   cancel-in-progress: true
+
 jobs:
-  verify-and-deploy:
+  verify-build-deploy:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -20,25 +27,21 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: npm install
+      - run: npm install --no-audit --no-fund
+
       - name: Lint
         run: npm run lint
       - name: Typecheck
         run: npm run typecheck
       - name: Tests
         run: npm run test
-      - name: Check frontend API URL
-        run: |
-          if [ -z "$VITE_API_URL" ]; then
-            echo "::error::Set the VITE_API_URL repository variable before deploying Pages."
-            exit 1
-          fi
-        env:
-          VITE_API_URL: ${{ vars.VITE_API_URL }}
-      - name: Build frontend
-        run: npm run build -w frontend
-        env:
-          VITE_API_URL: ${{ vars.VITE_API_URL }}
+
+      - name: Fetch today's restaurant menus
+        run: npm run update:data
+
+      - name: Build static site
+        run: npm run build
+
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
