@@ -12,7 +12,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 export const api = {
   restaurants: () => request<Restaurant[]>('/api/restaurants?city=Turku'),
   restaurant: (slug: string) => request<Restaurant>(`/api/restaurants/${encodeURIComponent(slug)}`),
-  refreshAll: (token: string) => request<{ ok: boolean; refreshed: number }>('/api/admin/refresh', {
+  refreshAll: (token: string) => request<{ ok: boolean; refreshed: number; failed: number; skipped: number }>('/api/admin/refresh', {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}` },
   }),

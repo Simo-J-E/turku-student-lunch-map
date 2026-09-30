@@ -62,6 +62,7 @@ export interface RestaurantFilters {
   maxPrice: number | null;
   studentDiscountOnly: boolean;
   premiumOnly: boolean;
+  menuAvailable: boolean;
   vegan: boolean;
   vegetarian: boolean;
   glutenFree: boolean;
